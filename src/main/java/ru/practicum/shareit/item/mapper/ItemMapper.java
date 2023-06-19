@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.mapper;
 
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.dto.ItemDto;

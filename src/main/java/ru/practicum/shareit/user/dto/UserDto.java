@@ -3,7 +3,7 @@ package ru.practicum.shareit.user.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.user.UserMarker;
+import ru.practicum.shareit.user.validation.group.UserMarker;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
