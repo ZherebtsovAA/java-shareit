@@ -1,41 +1,29 @@
 package ru.practicum.shareit.item.mapper;
 
-import lombok.NoArgsConstructor;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor
-public final class ItemMapper {
+@Mapper(componentModel = "spring")
+public abstract class ItemMapper {
 
-    public static ItemDto toItemDto(Item item) {
+    public ItemDto toItemDto(Item item) {
+        Long ownerId = item.getOwner() != null ? item.getOwner().getId() : null;
         Long requestId = item.getRequest() != null ? item.getRequest().getId() : null;
 
         return new ItemDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable(),
-                item.getOwner().getId(), requestId);
+                ownerId, requestId);
     }
 
-    public static List<ItemDto> toItemDto(Iterable<Item> items) {
-        List<ItemDto> result = new ArrayList<>();
-        for (Item item : items) {
-            result.add(toItemDto(item));
-        }
+    public abstract List<ItemDto> toItemDto(Iterable<Item> items);
 
-        return result;
-    }
-
-    public static Item toItem(ItemDto itemDto, User user) {
-        Item item = new Item();
-        item.setId(itemDto.getId());
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
-        item.setOwner(user);
-
-        return item;
-    }
+    @Mapping(source = "itemDto.id", target = "id")
+    @Mapping(source = "itemDto.name", target = "name")
+    @Mapping(source = "user", target = "owner")
+    public abstract Item toItem(ItemDto itemDto, User user);
 
 }

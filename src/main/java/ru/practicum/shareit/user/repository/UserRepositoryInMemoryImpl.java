@@ -3,7 +3,6 @@ package ru.practicum.shareit.user.repository;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,11 +50,7 @@ public class UserRepositoryInMemoryImpl implements UserRepository {
 
     @Override
     public Optional<User> findById(Long userId) {
-        if (users.containsKey(userId)) {
-            return Optional.of(users.get(userId));
-        }
-
-        return Optional.empty();
+        return Optional.ofNullable(users.get(userId));
     }
 
     public Optional<User> findByEmail(String email) {

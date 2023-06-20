@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.repository;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,11 +43,7 @@ public class ItemRepositoryInMemoryImpl implements ItemRepository {
 
     @Override
     public Optional<Item> findById(Long itemId) {
-        if (items.containsKey(itemId)) {
-            return Optional.of(items.get(itemId));
-        }
-
-        return Optional.empty();
+        return Optional.ofNullable(items.get(itemId));
     }
 
     @Override
