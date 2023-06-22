@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -17,6 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final UserService userService;
@@ -25,6 +27,7 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemMapper itemMapper;
 
+    @Transactional
     @Override
     public ItemDto save(Long userId, ItemDto itemDto) {
         User user = userMapper.toUser(userService.findById(userId));
@@ -33,6 +36,7 @@ public class ItemServiceImpl implements ItemService {
         return itemMapper.toItemDto(item);
     }
 
+    @Transactional
     @Override
     public ItemDto patchUpdate(Long itemId, Long userId, ItemDto itemDto) {
         User user = userMapper.toUser(userService.findById(userId));
