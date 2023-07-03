@@ -6,10 +6,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -23,6 +25,12 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleConflictException(final ConflictException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBadRequestException(final BadRequestException exception) {
         return Map.of("error", exception.getMessage());
     }
 
@@ -50,6 +58,16 @@ public class ErrorHandler {
         });
 
         return errors;
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleMethodArgumentTypeMismatchException(final MethodArgumentTypeMismatchException exception) {
+        if (exception.getName().equals("state") && Objects.equals(exception.getValue(), "UNSUPPORTED_STATUS")) {
+            return Map.of("error", "Unknown state: UNSUPPORTED_STATUS");
+        }
+
+        return Map.of("error", Objects.requireNonNull(exception.getMessage()));
     }
 
     @ExceptionHandler
