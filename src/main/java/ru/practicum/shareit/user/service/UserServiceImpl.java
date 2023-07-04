@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
         String userDtoEmail = userDto.getEmail();
         if (userDtoEmail != null) {
-            Optional<User> foundUser = repository.findByEmailContainingIgnoreCase(userDtoEmail);
+            Optional<User> foundUser = repository.findByEmail(userDtoEmail);
             if (foundUser.isPresent()) {
                 if (!Objects.equals(foundUser.get().getId(), userId)) {
                     throw new ConflictException("email{" + userDtoEmail + "} уже используется");

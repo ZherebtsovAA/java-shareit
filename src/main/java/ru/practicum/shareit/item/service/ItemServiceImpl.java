@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -142,16 +141,9 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
 
-        List<Item> items = itemRepository.findByAvailable(available).stream()
-                .filter(item -> {
-                    String nameAndDescription = (item.getName() + item.getDescription()).toLowerCase();
-                    String text = searchLine.toLowerCase();
-                    return nameAndDescription.contains(text);
-                })
-                .limit(numberItemToView)
-                .collect(Collectors.toList());
+        List<Item> foundItems = itemRepository.findSearchLineInNameAndDescription(searchLine.trim(), available, numberItemToView);
 
-        return itemMapper.toItemDto(items);
+        return itemMapper.toItemDto(foundItems);
     }
 
 }
