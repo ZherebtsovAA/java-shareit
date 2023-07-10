@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -37,6 +42,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
     private final UserMapper userMapper;
     private final ItemMapper itemMapper;
     private final CommentMapper commentMapper;
@@ -44,9 +50,18 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public ItemDto save(Long userId, ItemDto itemDto) {
+    public ItemDto save(Long userId, ItemDto itemDto) throws NotFoundException {
         User user = userMapper.toUser(userService.findById(userId));
-        Item item = itemRepository.save(itemMapper.toItem(itemDto, user));
+
+        ItemRequest itemRequest = null;
+        Long requestId = itemDto.getRequestId();
+        if (requestId != null) {
+            itemRequest = itemRequestRepository.findById(requestId)
+                    .orElseThrow(() -> new NotFoundException("вещь создается на основании не существующего запроса " +
+                            "с id{" + requestId + "}"));
+        }
+
+        Item item = itemRepository.save(itemMapper.toItem(itemDto, user, itemRequest));
 
         return itemMapper.toItemDto(item);
     }
@@ -109,12 +124,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoWithLastAndNextBooking> findAllOwnerItem(Long ownerId) {
+    public List<ItemDtoWithLastAndNextBooking> findAllOwnerItem(Long ownerId, Integer from, Integer size)
+            throws BadRequestException {
+        if (from < 0) {
+            throw new BadRequestException("request param from{" + from + "} не может быть отрицательным");
+        }
+
         User owner = new User();
         owner.setId(ownerId);
 
         Sort sort = Sort.by(Sort.Direction.ASC, "id");
-        List<Item> itemsOwner = itemRepository.findByOwner(owner, sort);
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Item> itemsOwner = itemRepository.findByOwner(owner, pageable);
 
         List<ItemDtoWithLastAndNextBooking> finalListBookings = new ArrayList<>();
         for (Item item : itemsOwner) {
@@ -136,12 +159,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> findByNameAndDescription(String searchLine, Boolean available, Integer numberItemToView) {
+    public List<ItemDto> findByNameAndDescription(String searchLine, Boolean available, Integer from, Integer size)
+            throws BadRequestException {
+        if (from < 0) {
+            throw new BadRequestException("request param from{" + from + "} не может быть отрицательным");
+        }
+
         if (searchLine.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<Item> foundItems = itemRepository.findSearchLineInNameAndDescription(searchLine.trim(), available, numberItemToView);
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Item> foundItems = itemRepository.findSearchLineInNameAndDescription(searchLine.trim(), available, pageable);
 
         return itemMapper.toItemDto(foundItems);
     }

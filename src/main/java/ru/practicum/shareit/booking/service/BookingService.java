@@ -16,8 +16,10 @@ public interface BookingService {
 
     BookingDto findById(Long bookingId, Long userId) throws NotFoundException;
 
-    List<BookingDto> findAllBookingByUserId(Long userId, BookingState state) throws NotFoundException;
+    List<BookingDto> findAllBookingByUserId(Long userId, BookingState state, Integer from, Integer size)
+            throws NotFoundException, BadRequestException;
 
-    List<BookingDto> findBookingForAllItemByUserId(Long userId, BookingState state) throws NotFoundException;
+    List<BookingDto> findBookingForAllItemByUserId(Long userId, BookingState state, Integer from, Integer size)
+            throws NotFoundException, BadRequestException;
 
 }

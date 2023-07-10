@@ -64,8 +64,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> findAll(Integer numberPage, Integer numberUserToView) {
-        Sort sortById = Sort.by(Sort.Direction.ASC, "id");
-        Pageable page = PageRequest.of(numberPage, numberUserToView, sortById);
+        Sort sort = Sort.by(Sort.Direction.ASC, "id");
+        Pageable page = PageRequest.of(numberPage, numberUserToView, sort);
         List<User> users = repository.findAll(page).getContent();
         return userMapper.toUserDto(users);
     }

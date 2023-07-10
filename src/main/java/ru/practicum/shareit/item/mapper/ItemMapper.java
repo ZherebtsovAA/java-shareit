@@ -7,6 +7,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithLastAndNextBooking;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -26,8 +27,10 @@ public abstract class ItemMapper {
 
     @Mapping(source = "itemDto.id", target = "id")
     @Mapping(source = "itemDto.name", target = "name")
+    @Mapping(source = "itemDto.description", target = "description")
     @Mapping(source = "user", target = "owner")
-    public abstract Item toItem(ItemDto itemDto, User user);
+    @Mapping(source = "itemRequest", target = "request")
+    public abstract Item toItem(ItemDto itemDto, User user, ItemRequest itemRequest);
 
     @Mapping(source = "item.id", target = "id")
     @Mapping(source = "item.owner.id", target = "ownerId")
