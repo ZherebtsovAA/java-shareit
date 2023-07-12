@@ -21,6 +21,7 @@ public interface ItemRequestMapper {
     ItemRequestDto toItemRequestDto(ItemRequest itemRequest);
 
     @Mapping(source = "items", target = "items")
+    @Mapping(source = "itemRequest.requestor.id", target = "requestorId")
     ItemRequestResponseDto toItemRequestResponseDto(ItemRequest itemRequest, List<ItemDto> items);
 
 }

@@ -84,7 +84,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public ItemDto patchUpdate(Long itemId, Long userId, ItemDto itemDto) throws NotFoundException {
-        userMapper.toUser(userService.findById(userId));
+        userService.findById(userId);
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("вещи с id{" + itemId + "} нет в списке вещей"));
