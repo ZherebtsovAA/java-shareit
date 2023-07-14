@@ -132,4 +132,16 @@ class UserControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void handleConstraintViolationException() throws Exception {
+        UserDto userDto = new UserDto(null, "user", null);
+
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
 }

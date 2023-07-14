@@ -144,4 +144,26 @@ class BookingControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void handleMethodArgumentNotValidException() throws Exception {
+        LocalDateTime start = LocalDateTime.now().plusMinutes(10);
+        LocalDateTime end = start.plusDays(1);
+        BookingRequestDto bookingRequestDto = new BookingRequestDto(null, start, end, -1L);
+
+        mvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", "1")
+                        .content(mapper.writeValueAsString(bookingRequestDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void handleMethodArgumentTypeMismatchException() throws Exception {
+        mvc.perform(get("/bookings/owner?state=UNSUPPORTED_STATUS")
+                        .header("X-Sharer-User-Id", "1"))
+                .andExpect(status().isBadRequest());
+    }
+
 }

@@ -130,4 +130,16 @@ class ItemControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void handleThrowable() throws Exception {
+        ItemDto itemDto = new ItemDto(null, "name", "description", true, null, null);
+
+        mvc.perform(post("/items")
+                        .content(mapper.writeValueAsString(itemDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
 }
