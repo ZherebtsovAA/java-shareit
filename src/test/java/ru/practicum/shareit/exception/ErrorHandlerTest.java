@@ -9,8 +9,8 @@ class ErrorHandlerTest {
 
     @Test
     void handleNotFoundException() {
-        Map<String, String> handleNotFoundException = errorHandler.
-                handleNotFoundException(new NotFoundException("NotFoundException"));
+        Map<String, String> handleNotFoundException = errorHandler
+                .handleNotFoundException(new NotFoundException("NotFoundException"));
 
         Map<String, String> handleConflictException = errorHandler
                 .handleConflictException(new ConflictException("ConflictException"));
