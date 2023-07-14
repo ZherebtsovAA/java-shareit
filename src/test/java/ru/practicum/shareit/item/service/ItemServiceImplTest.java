@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,8 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.mapper.BookingMapperImpl;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithLastAndNextBooking;
@@ -171,6 +174,31 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void patchUpdateWhenNotFoundException() {
+        Long itemId = 1L;
+        Long userId = 1L;
+        ItemDto itemDto = new ItemDto(null, "Отвертка", "Аккумуляторная отвертка", false, null, null);
+
+        Mockito
+                .when(userService.findById(Mockito.anyLong()))
+                .thenReturn(new UserDto());
+
+        User user = makeUser(userId, "user", "user@user.com");
+        Item item = makeItem(itemId, "Дрель", "Простая дрель", true, user, null);
+
+        Mockito
+                .when(itemRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(item));
+
+        NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
+                () -> itemServiceImpl.patchUpdate(itemId, 2L, itemDto));
+
+        Assertions.assertEquals("вещь с id{" + itemId + "} не является вещью пользователя с id{" + 2L + "}",
+                exception.getMessage());
+    }
+
+    @Test
     void findByIdWhenItemOwnerNotUserId() {
         Long itemId = 1L;
         Long userId = 1L;
@@ -235,6 +263,20 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void findAllOwnerItemWhenBadRequestException() {
+        Long ownerId = 1L;
+        Integer from = -10;
+        Integer size = 10;
+
+        BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> itemServiceImpl.findAllOwnerItem(ownerId, from, size));
+
+        Assertions.assertEquals("request param from{" + from + "} не может быть отрицательным",
+                exception.getMessage());
+    }
+
+    @Test
     void findAllOwnerItem() {
         Long ownerId = 1L;
         Integer from = 0;
@@ -263,6 +305,38 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void findByNameAndDescriptionWhenBadRequestException() {
+        String searchLine = "дрель";
+        Boolean available = true;
+        Integer from = -10;
+        Integer size = 10;
+
+        BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> itemServiceImpl.findByNameAndDescription(searchLine, available, from, size));
+
+        Assertions.assertEquals("request param from{" + from + "} не может быть отрицательным",
+                exception.getMessage());
+    }
+
+    @Test
+    void findByNameAndDescriptionWhenSearchLineEmpty() {
+        Long ownerId = 1L;
+        String searchLine = "";
+        Boolean available = true;
+        Integer from = 0;
+        Integer size = 10;
+
+        User owner = makeUser(ownerId, "owner", "owner@user.com");
+        List<Item> sourceItem = List.of(makeItem(1L, "Дрель", "Простая дрель", true, owner,
+                null));
+
+        List<ItemDto> items = itemServiceImpl.findByNameAndDescription(searchLine, available, from, size);
+
+        assertThat(items, hasSize(0));
+    }
+
+    @Test
     void findByNameAndDescription() {
         Long ownerId = 1L;
         String searchLine = "дрель";
@@ -279,6 +353,7 @@ class ItemServiceImplTest {
                 .when(itemRepository.findSearchLineInNameAndDescription(Mockito.anyString(), Mockito.anyBoolean(),
                         Mockito.any(Pageable.class)))
                 .thenReturn(getItem(sourceItem, page, size));
+
         List<ItemDto> items = itemServiceImpl.findByNameAndDescription(searchLine, available, from, size);
 
         assertThat(items, hasSize(1));
