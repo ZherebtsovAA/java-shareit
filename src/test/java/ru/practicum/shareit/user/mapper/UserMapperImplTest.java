@@ -6,7 +6,7 @@ class UserMapperImplTest {
 
     @Test
     void test() {
-
+        UserMapperImpl userMapperImpl = new UserMapperImpl();
     }
 
 }
