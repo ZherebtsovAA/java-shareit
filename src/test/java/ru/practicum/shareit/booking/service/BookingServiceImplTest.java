@@ -463,8 +463,6 @@ class BookingServiceImplTest {
         assertThat(bookings, notNullValue());
     }
 
-
-
     private User makeUser(Long id, String name, String email) {
         User user = new User();
         user.setId(id);

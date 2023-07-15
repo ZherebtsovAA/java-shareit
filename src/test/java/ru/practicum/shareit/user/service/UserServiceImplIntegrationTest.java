@@ -20,17 +20,13 @@ class UserServiceImplIntegrationTest {
     UserService userService;
 
     @Test
-    void contextLoads() {
-    }
-
-    @Test
     void patchWhenConflictException() {
-        userService.save(new UserDto(null, "name", "name@ya.ru"));
+        Long userId = userService.save(new UserDto(null, "name", "name@ya.ru")).getId();
         userService.save(new UserDto(null, "noName", "noName@ya.ru"));
 
         ConflictException exception = Assertions.assertThrows(
                 ConflictException.class,
-                () -> userService.patchUpdate(1L, new UserDto(null, "name", "noName@ya.ru")));
+                () -> userService.patchUpdate(userId, new UserDto(null, "name", "noName@ya.ru")));
     }
 
 }
