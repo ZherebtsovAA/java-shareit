@@ -47,7 +47,7 @@ public class Item {
 
     @Override
     public int hashCode() {
-        return getClass().hashCode();
+        return id.hashCode();
     }
 
 }

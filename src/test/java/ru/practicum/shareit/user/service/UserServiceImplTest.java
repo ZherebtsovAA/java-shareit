@@ -1,53 +1,51 @@
 package ru.practicum.shareit.user.service;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.mapper.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
     UserServiceImpl userServiceImpl;
     @Mock
     UserRepository repository;
-    @Mock
-    UserMapper userMapper;
+    static UserMapper userMapper;
+
+    @BeforeAll
+    static void beforeAll() {
+        userMapper = new UserMapperImpl();
+    }
+
+    @BeforeEach
+    void beforeEach() {
+        userServiceImpl = new UserServiceImpl(repository, userMapper);
+    }
 
     @Test
     void save() {
-        userServiceImpl = new UserServiceImpl(repository, userMapper);
-
-        UserDto userDto = new UserDto();
-        userDto.setName("user");
-        userDto.setEmail("user@user.com");
-
-        Mockito
-                .when(userMapper.toUser(Mockito.any(UserDto.class)))
-                .thenAnswer(invocationOnMock -> {
-                    UserDto userDtoOdj = invocationOnMock.getArgument(0, UserDto.class);
-                    User user = new User();
-                    user.setName(userDtoOdj.getName());
-                    user.setEmail(userDtoOdj.getEmail());
-
-                    return user;
-                });
+        UserDto userDto = new UserDto(null, "user", "user@user.com");
 
         Mockito
                 .when(repository.save(Mockito.any(User.class)))
@@ -56,14 +54,6 @@ class UserServiceImplTest {
                     user.setId(1L);
 
                     return user;
-                });
-
-        Mockito
-                .when(userMapper.toUserDto(Mockito.any(User.class)))
-                .thenAnswer(invocationOnMock -> {
-                    User user = invocationOnMock.getArgument(0, User.class);
-
-                    return new UserDto(user.getId(), user.getName(), user.getEmail());
                 });
 
         UserDto userCreated = userServiceImpl.save(userDto);
@@ -75,8 +65,6 @@ class UserServiceImplTest {
 
     @Test
     void patchUpdateWhenNotFoundException() {
-        userServiceImpl = new UserServiceImpl(repository, userMapper);
-
         Long userNotFound = 9999L;
         UserDto userDto = new UserDto();
 
@@ -88,13 +76,12 @@ class UserServiceImplTest {
                 NotFoundException.class,
                 () -> userServiceImpl.patchUpdate(userNotFound, userDto));
 
-        Assertions.assertEquals("пользователя с id{" + userNotFound + "} нет в списке пользователей", exception.getMessage());
+        Assertions.assertEquals("пользователя с id{" + userNotFound + "} нет в списке пользователей",
+                exception.getMessage());
     }
 
     @Test
     void patchUpdateWhenConflictException() {
-        userServiceImpl = new UserServiceImpl(repository, userMapper);
-
         Long userId = 2L;
         UserDto userDto = new UserDto();
         userDto.setName("userUpdate");
@@ -131,8 +118,6 @@ class UserServiceImplTest {
 
     @Test
     void patchUpdate() {
-        userServiceImpl = new UserServiceImpl(repository, userMapper);
-
         Long userId = 2L;
         UserDto userDto = new UserDto();
         userDto.setName("userUpdate");
@@ -157,14 +142,6 @@ class UserServiceImplTest {
                 .when(repository.save(Mockito.any(User.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, User.class));
 
-        Mockito
-                .when(userMapper.toUserDto(Mockito.any(User.class)))
-                .thenAnswer(invocationOnMock -> {
-                    User user = invocationOnMock.getArgument(0, User.class);
-
-                    return new UserDto(user.getId(), user.getName(), user.getEmail());
-                });
-
         UserDto updateUserDto = userServiceImpl.patchUpdate(userId, userDto);
 
         assertThat(updateUserDto.getId(), equalTo(userId));
@@ -174,8 +151,6 @@ class UserServiceImplTest {
 
     @Test
     void findById() {
-        userServiceImpl = new UserServiceImpl(repository, userMapper);
-
         Long userId = 1L;
 
         Mockito
@@ -189,50 +164,31 @@ class UserServiceImplTest {
                     return Optional.of(user);
                 });
 
-        Mockito
-                .when(userMapper.toUserDto(Mockito.any(User.class)))
-                .thenAnswer(invocationOnMock -> {
-                    User user = invocationOnMock.getArgument(0, User.class);
-
-                    return new UserDto(user.getId(), user.getName(), user.getEmail());
-                });
-
         userServiceImpl.findById(userId);
 
         Mockito.verify(repository, Mockito.times(1))
                 .findById(userId);
-
-        Mockito.verify(userMapper, Mockito.times(1))
-                .toUserDto(Mockito.any(User.class));
     }
 
     @Test
     void findAll() {
-        userServiceImpl = new UserServiceImpl(repository, userMapper);
-
-        Integer numberPage = 0;
-        Integer numberUserToView = 10;
+        int numberPage = 0;
+        int numberUserToView = 10;
 
         Mockito
                 .when(repository.findAll(Mockito.any(Pageable.class)))
-                .thenReturn(Page.empty());
+                .thenReturn(getUser(List.of(makeUser(1L, "user", "user@ya.ru")), numberPage, numberUserToView));
 
-        Mockito
-                .when(userMapper.toUserDto(Mockito.anyList()))
-                .thenReturn(Collections.emptyList());
+        List<UserDto> users = userServiceImpl.findAll(numberPage, numberUserToView);
 
-        userServiceImpl.findAll(numberPage, numberUserToView);
+        assertThat(users, hasSize(1));
 
         Mockito.verify(repository, Mockito.times(1))
                 .findAll(Mockito.any(Pageable.class));
-
-        Mockito.verify(userMapper, Mockito.times(1))
-                .toUserDto(Mockito.anyList());
     }
 
     @Test
     void deleteById() {
-        userServiceImpl = new UserServiceImpl(repository, userMapper);
         Long userId = 1L;
 
         Mockito
@@ -246,6 +202,25 @@ class UserServiceImplTest {
 
         Mockito.verify(repository, Mockito.times(1))
                 .deleteById(Mockito.anyLong());
+    }
+
+    private User makeUser(Long id, String name, String email) {
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        user.setEmail(email);
+
+        return user;
+    }
+
+    private Page<User> getUser(List<User> sourceUser, int page, int size) {
+        Pageable pageRequest = PageRequest.of(page, size);
+
+        int start = (int) pageRequest.getOffset();
+        int end = Math.min((start + pageRequest.getPageSize()), sourceUser.size());
+
+        List<User> pageContent = sourceUser.subList(start, end);
+        return new PageImpl<>(pageContent, pageRequest, sourceUser.size());
     }
 
 }
