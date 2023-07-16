@@ -16,7 +16,6 @@ class CommentModelTest {
         Comment second = makeComment(2L, "secondComment", null, null, null);
 
         assertFalse(first.equals(second));
-
         assertNotEquals(first.hashCode(), second.hashCode());
     }
 

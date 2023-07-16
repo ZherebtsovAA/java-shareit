@@ -9,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 class BookingRepositoryTest {
     @Autowired
     private TestEntityManager em;
-
     @Autowired
     private BookingRepository repository;
 

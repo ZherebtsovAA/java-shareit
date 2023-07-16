@@ -9,6 +9,11 @@ import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.transaction.Transactional;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 @Transactional
 @SpringBootTest(
@@ -27,6 +32,13 @@ class UserServiceImplIntegrationTest {
         ConflictException exception = Assertions.assertThrows(
                 ConflictException.class,
                 () -> userService.patchUpdate(userId, new UserDto(null, "name", "noName@ya.ru")));
+    }
+
+    @Test
+    void findAll() {
+        List<UserDto> users = userService.findAll(0, 10);
+
+        assertThat(users, is(notNullValue()));
     }
 
 }

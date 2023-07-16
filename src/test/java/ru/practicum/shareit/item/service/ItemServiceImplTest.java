@@ -174,6 +174,36 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void patchUpdateWhenItemDtoFieldsIsNull() {
+        Long itemId = 1L;
+        Long userId = 1L;
+        ItemDto itemDto = new ItemDto(null, null, null, null, null, null);
+
+        Mockito
+                .when(userService.findById(userId))
+                .thenReturn(new UserDto());
+
+        User user = makeUser(userId, "user", "user@user.com");
+        Item item = makeItem(itemId, "Дрель", "Простая дрель", true, user, null);
+
+        Mockito
+                .when(itemRepository.findById(itemId))
+                .thenReturn(Optional.of(item));
+
+        Mockito
+                .when(itemRepository.save(Mockito.any(Item.class)))
+                .thenReturn(item);
+
+        ItemDto patchItemDto = itemServiceImpl.patchUpdate(itemId, userId, itemDto);
+
+        assertThat(patchItemDto.getId(), equalTo(itemId));
+        assertThat(patchItemDto.getName(), is(notNullValue()));
+        assertThat(patchItemDto.getDescription(), is(notNullValue()));
+        assertThat(patchItemDto.getAvailable(), is(notNullValue()));
+        assertThat(patchItemDto.getOwnerId(), equalTo(item.getOwner().getId()));
+    }
+
+    @Test
     void patchUpdateWhenNotFoundException() {
         Long itemId = 1L;
         Long userId = 1L;

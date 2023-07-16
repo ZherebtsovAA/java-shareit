@@ -7,10 +7,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 @DataJpaTest
 class ItemRepositoryTest {
-
     @Autowired
     private TestEntityManager em;
-
     @Autowired
     private ItemRepository repository;
 

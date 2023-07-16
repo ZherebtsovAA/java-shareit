@@ -12,7 +12,6 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @JsonTest
 class BookingResponseDtoJsonTest {
-
     @Autowired
     private JacksonTester<BookingResponseDto> json;
 

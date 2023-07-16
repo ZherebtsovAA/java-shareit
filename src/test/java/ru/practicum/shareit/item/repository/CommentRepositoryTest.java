@@ -7,10 +7,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 @DataJpaTest
 class CommentRepositoryTest {
-
     @Autowired
     private TestEntityManager em;
-
     @Autowired
     private CommentRepository repository;
 

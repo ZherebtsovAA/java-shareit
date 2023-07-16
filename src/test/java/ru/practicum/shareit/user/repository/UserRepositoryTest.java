@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserRepositoryTest {
     @Autowired
     private TestEntityManager em;
-
     @Autowired
     private UserRepository repository;
 

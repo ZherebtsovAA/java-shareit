@@ -150,6 +150,33 @@ class UserServiceImplTest {
     }
 
     @Test
+    void patchUpdateWhenUserDtoFieldsIsNull() {
+        Long userId = 2L;
+        UserDto userDto = new UserDto(null, null, null);
+
+        Mockito
+                .when(repository.findById(userId))
+                .thenAnswer(invocationOnMock -> {
+                    User user = new User();
+                    user.setId(userId);
+                    user.setName("findUser");
+                    user.setEmail("findUser@user.com");
+
+                    return Optional.of(user);
+                });
+
+        Mockito
+                .when(repository.save(Mockito.any(User.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, User.class));
+
+        UserDto updateUserDto = userServiceImpl.patchUpdate(userId, userDto);
+
+        assertThat(updateUserDto.getId(), equalTo(userId));
+        assertThat(updateUserDto.getName(), is(notNullValue()));
+        assertThat(updateUserDto.getEmail(), is(notNullValue()));
+    }
+
+    @Test
     void findById() {
         Long userId = 1L;
 

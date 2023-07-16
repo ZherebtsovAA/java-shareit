@@ -326,6 +326,13 @@ class BookingServiceImplTest {
         Item sourceItem = makeItem(1L, "дрель", "обычная дрель", true, owner, null);
         List<Booking> sourceBooking = List.of(makeBooking(bookingId, start, end, sourceItem, booker, null));
 
+        BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> bookingServiceImpl.findAllBookingByUserId(userId, BookingState.ALL, -10, 10));
+
+        Assertions.assertEquals("request param from{" + -10 + "} не может быть отрицательным",
+                exception.getMessage());
+
         Mockito
                 .when(userRepository.findById(ownerId))
                 .thenReturn(Optional.of(user));
@@ -403,6 +410,13 @@ class BookingServiceImplTest {
         Item sourceItem = makeItem(1L, "дрель", "обычная дрель", true, owner, null);
         List<Booking> sourceBooking = List.of(makeBooking(bookingId, start, end, sourceItem, booker, null));
 
+        BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> bookingServiceImpl.findBookingForAllItemByUserId(bookerId, BookingState.ALL, -10, 10));
+
+        Assertions.assertEquals("request param from{" + -10 + "} не может быть отрицательным",
+                exception.getMessage());
+
         Mockito
                 .when(userRepository.findById(ownerId))
                 .thenReturn(Optional.of(owner));
@@ -461,6 +475,30 @@ class BookingServiceImplTest {
         bookings = bookingServiceImpl.findBookingForAllItemByUserId(ownerId, BookingState.REJECTED, from, size);
 
         assertThat(bookings, notNullValue());
+    }
+
+    @Test
+    void checkStartAndEndDateBookingWhenBadRequestException() {
+        Long bookerId = 9L;
+        Long itemId = 1L;
+        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime end = start.minusDays(1);
+        BookingRequestDto bookingRequestDto = new BookingRequestDto(null, start, end, itemId);
+
+        BadRequestException exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> bookingServiceImpl.save(bookerId, bookingRequestDto));
+
+        Assertions.assertEquals("дата окончания бронирования ранее даты начала бронирования",
+                exception.getMessage());
+
+        bookingRequestDto.setEnd(start);
+        exception = Assertions.assertThrows(
+                BadRequestException.class,
+                () -> bookingServiceImpl.save(bookerId, bookingRequestDto));
+
+        Assertions.assertEquals("дата окончания бронирования равна дате начала бронирования",
+                exception.getMessage());
     }
 
     private User makeUser(Long id, String name, String email) {
