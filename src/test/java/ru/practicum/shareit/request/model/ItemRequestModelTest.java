@@ -31,7 +31,7 @@ class ItemRequestModelTest {
     }
 
     @Test
-    void test(){
+    void test() {
         assertTrue(true);
         assertTrue(true);
         assertTrue(true);
