@@ -21,6 +21,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    static final Sort ID_SORT = Sort.by("id");
     private final UserRepository repository;
     private final UserMapper userMapper;
 
@@ -64,8 +65,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> findAll(Integer numberPage, Integer numberUserToView) {
-        Sort sort = Sort.by(Sort.Direction.ASC, "id");
-        Pageable page = PageRequest.of(numberPage, numberUserToView, sort);
+        Pageable page = PageRequest.of(numberPage, numberUserToView, ID_SORT.ascending());
         List<User> users = repository.findAll(page).getContent();
         return userMapper.toUserDto(users);
     }

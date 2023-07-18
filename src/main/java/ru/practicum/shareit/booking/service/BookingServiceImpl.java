@@ -1,7 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -13,6 +12,7 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.common.CustomPageRequest;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -27,12 +27,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static org.springframework.data.domain.Sort.Direction.DESC;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
+    static final Sort START_SORT = Sort.by("start");
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -50,7 +49,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("вещи с id{" + itemId + "} нет в списке вещей"));
 
         List<Booking> bookingItemWithItemId = bookingRepository.findByItemAndStatusIn(item,
-                List.of(BookingStatus.WAITING, BookingStatus.APPROVED), Sort.by(Sort.Direction.ASC, "start"));
+                List.of(BookingStatus.WAITING, BookingStatus.APPROVED), START_SORT.ascending());
         if (checkAvailableBookingDates(bookingRequestDto, bookingItemWithItemId)) {
             throw new BadRequestException("бронирование на указанные даты и время невозможно");
         }
@@ -126,9 +125,7 @@ public class BookingServiceImpl implements BookingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
-        Sort sort = Sort.by(DESC, "start");
-        int page = from / size;
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = new CustomPageRequest(from, size, START_SORT.descending()).getPageRequest();
         switch (state) {
             case ALL:
                 return bookingMapper.toBookingDto(bookingRepository.findByBooker(user, pageable));
@@ -161,9 +158,7 @@ public class BookingServiceImpl implements BookingService {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
-        Sort sort = Sort.by(DESC, "start");
-        int page = from / size;
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = new CustomPageRequest(from, size, START_SORT.descending()).getPageRequest();
         switch (state) {
             case ALL:
                 return bookingMapper.toBookingDto(bookingRepository.findBookingForAllItemByUser(owner, pageable));
@@ -210,5 +205,4 @@ public class BookingServiceImpl implements BookingService {
 
         return false;
     }
-
 }

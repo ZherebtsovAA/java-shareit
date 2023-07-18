@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -11,6 +10,7 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.common.CustomPageRequest;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -24,9 +24,8 @@ import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
-import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,12 +37,12 @@ import java.util.Objects;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private final UserService userService;
+    static final Sort ID_SORT = Sort.by("id");
+    private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final ItemRequestRepository itemRequestRepository;
-    private final UserMapper userMapper;
     private final ItemMapper itemMapper;
     private final CommentMapper commentMapper;
     private final BookingMapper bookingMapper;
@@ -51,7 +50,8 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public ItemDto save(Long userId, ItemDto itemDto) throws NotFoundException {
-        User user = userMapper.toUser(userService.findById(userId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
         ItemRequest itemRequest = null;
         Long requestId = itemDto.getRequestId();
@@ -71,7 +71,9 @@ public class ItemServiceImpl implements ItemService {
     public CommentDto saveComment(Long itemId, Long userId, CommentDto commentDto) throws NotFoundException, BadRequestException {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("вещи с id{" + itemId + "} нет в списке вещей"));
-        User user = userMapper.toUser(userService.findById(userId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
         bookingRepository.findFirst1ByItemAndBookerAndEndBeforeOrderByEndDesc(item, user, LocalDateTime.now())
                 .orElseThrow(() -> new BadRequestException("извени, но ты не можешь оставить отзыв..."));
@@ -84,7 +86,8 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public ItemDto patchUpdate(Long itemId, Long userId, ItemDto itemDto) throws NotFoundException {
-        userService.findById(userId);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("вещи с id{" + itemId + "} нет в списке вещей"));
@@ -110,7 +113,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDtoWithLastAndNextBooking findById(Long itemId, Long userId) throws NotFoundException {
-        userService.findById(userId);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
+
+
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("вещи с id{" + itemId + "} нет в списке вещей"));
 
@@ -133,10 +139,7 @@ public class ItemServiceImpl implements ItemService {
         User owner = new User();
         owner.setId(ownerId);
 
-        Sort sort = Sort.by(Sort.Direction.ASC, "id");
-        int page = from / size;
-        Pageable pageable = PageRequest.of(page, size, sort);
-
+        Pageable pageable = new CustomPageRequest(from, size, ID_SORT.ascending()).getPageRequest();
         Page<Item> itemsOwner = itemRepository.findByOwner(owner, pageable);
 
         List<ItemDtoWithLastAndNextBooking> finalListBookings = new ArrayList<>();
@@ -169,12 +172,9 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
 
-        int page = from / size;
-        Pageable pageable = PageRequest.of(page, size);
-
+        Pageable pageable = new CustomPageRequest(from, size).getPageRequest();
         Page<Item> foundItems = itemRepository.findSearchLineInNameAndDescription(searchLine.trim(), available, pageable);
 
         return itemMapper.toItemDto(foundItems);
     }
-
 }
