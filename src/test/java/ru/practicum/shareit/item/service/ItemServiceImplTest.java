@@ -35,6 +35,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.mapper.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
@@ -49,7 +50,7 @@ import static org.hamcrest.Matchers.*;
 class ItemServiceImplTest {
     ItemServiceImpl itemServiceImpl;
     @Mock
-    UserService userService;
+    UserRepository userRepository;
     @Mock
     ItemRepository itemRepository;
     @Mock
@@ -58,14 +59,12 @@ class ItemServiceImplTest {
     CommentRepository commentRepository;
     @Mock
     ItemRequestRepository itemRequestRepository;
-    static UserMapper userMapper;
     static ItemMapper itemMapper;
     static CommentMapper commentMapper;
     static BookingMapper bookingMapper;
 
     @BeforeAll
     static void beforeAll() {
-        userMapper = new UserMapperImpl();
         itemMapper = new ItemMapperImpl();
         commentMapper = new CommentMapperImpl();
         bookingMapper = new BookingMapperImpl();
@@ -73,8 +72,8 @@ class ItemServiceImplTest {
 
     @BeforeEach
     void beforeEach() {
-        itemServiceImpl = new ItemServiceImpl(userService, itemRepository, bookingRepository, commentRepository,
-                itemRequestRepository, userMapper, itemMapper, commentMapper, bookingMapper);
+        itemServiceImpl = new ItemServiceImpl(userRepository, itemRepository, bookingRepository, commentRepository,
+                itemRequestRepository, itemMapper, commentMapper, bookingMapper);
     }
 
     @Test
@@ -89,8 +88,8 @@ class ItemServiceImplTest {
         ItemRequest itemRequest = makeItemRequest(1L, null, null, null);
 
         Mockito
-                .when(userService.findById(userId))
-                .thenReturn(new UserDto(userId, "user", "user@user.com"));
+                .when(userRepository.findById(userId))
+                .thenReturn(Optional.of(makeUser(userId, "user", "user@user.com")));
 
         Mockito
                 .when(itemRequestRepository.findById(itemDto.getRequestId()))
@@ -123,8 +122,8 @@ class ItemServiceImplTest {
                 .thenReturn(Optional.of(item));
 
         Mockito
-                .when(userService.findById(userId))
-                .thenReturn(userMapper.toUserDto(user));
+                .when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
 
         Mockito
                 .when(bookingRepository.findFirst1ByItemAndBookerAndEndBeforeOrderByEndDesc(Mockito.any(Item.class),
@@ -150,8 +149,8 @@ class ItemServiceImplTest {
         ItemDto itemDto = new ItemDto(null, "Отвертка", "Аккумуляторная отвертка", false, null, null);
 
         Mockito
-                .when(userService.findById(userId))
-                .thenReturn(new UserDto());
+                .when(userRepository.findById(userId))
+                .thenReturn(Optional.of(makeUser(null, null, null)));
 
         User user = makeUser(userId, "user", "user@user.com");
         Item item = makeItem(itemId, "Дрель", "Простая дрель", true, user, null);
@@ -180,8 +179,8 @@ class ItemServiceImplTest {
         ItemDto itemDto = new ItemDto(null, null, null, null, null, null);
 
         Mockito
-                .when(userService.findById(userId))
-                .thenReturn(new UserDto());
+                .when(userRepository.findById(userId))
+                .thenReturn(Optional.of(makeUser(null, null, null)));
 
         User user = makeUser(userId, "user", "user@user.com");
         Item item = makeItem(itemId, "Дрель", "Простая дрель", true, user, null);
@@ -210,8 +209,8 @@ class ItemServiceImplTest {
         ItemDto itemDto = new ItemDto(null, "Отвертка", "Аккумуляторная отвертка", false, null, null);
 
         Mockito
-                .when(userService.findById(Mockito.anyLong()))
-                .thenReturn(new UserDto());
+                .when(userRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(makeUser(null, null, null)));
 
         User user = makeUser(userId, "user", "user@user.com");
         Item item = makeItem(itemId, "Дрель", "Простая дрель", true, user, null);
@@ -234,8 +233,8 @@ class ItemServiceImplTest {
         Long userId = 1L;
 
         Mockito
-                .when(userService.findById(userId))
-                .thenReturn(new UserDto());
+                .when(userRepository.findById(userId))
+                .thenReturn(Optional.of(makeUser(null, null, null)));
 
         User owner = makeUser(2L, "owner", "owner@user.com");
         Item item = makeItem(itemId, "Дрель", "Простая дрель", true, owner, null);
@@ -266,8 +265,8 @@ class ItemServiceImplTest {
         Long userId = 1L;
 
         Mockito
-                .when(userService.findById(userId))
-                .thenReturn(new UserDto());
+                .when(userRepository.findById(userId))
+                .thenReturn(Optional.of(makeUser(null, null, null)));
 
         User owner = makeUser(userId, "owner", "owner@user.com");
         Item item = makeItem(itemId, "Дрель", "Простая дрель", true, owner, null);

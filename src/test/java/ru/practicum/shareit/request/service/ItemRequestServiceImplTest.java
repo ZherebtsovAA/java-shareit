@@ -23,10 +23,8 @@ import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.mapper.ItemRequestMapperImpl;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -45,8 +43,6 @@ class ItemRequestServiceImplTest {
     UserRepository userRepository;
     @Mock
     ItemRepository itemRepository;
-    @Mock
-    UserService userService;
     static ItemRequestMapper itemRequestMapper;
     static ItemMapper itemMapper;
 
@@ -58,7 +54,7 @@ class ItemRequestServiceImplTest {
 
     @BeforeEach
     void beforeEach() {
-        itemRequestServiceImpl = new ItemRequestServiceImpl(repository, userRepository, itemRepository, userService,
+        itemRequestServiceImpl = new ItemRequestServiceImpl(repository, userRepository, itemRepository,
                 itemRequestMapper, itemMapper);
     }
 
@@ -120,8 +116,8 @@ class ItemRequestServiceImplTest {
         Long userId = 1L;
 
         Mockito
-                .when(userService.findById(userId))
-                .thenReturn(new UserDto());
+                .when(userRepository.findById(userId))
+                .thenReturn(Optional.of(makeUser(null, null, null)));
 
         Mockito
                 .when(repository.findById(requestId))
@@ -139,7 +135,7 @@ class ItemRequestServiceImplTest {
                 });
 
         Mockito
-                .when(itemRepository.findByRequest_Id(requestId))
+                .when(itemRepository.findAllItemByRequestId(Mockito.any()))
                 .thenReturn(Collections.emptyList());
 
 
@@ -158,8 +154,8 @@ class ItemRequestServiceImplTest {
         Long userId = 1L;
 
         Mockito
-                .when(userService.findById(userId))
-                .thenReturn(new UserDto());
+                .when(userRepository.findById(userId))
+                .thenReturn(Optional.of(makeUser(0L, "user", "email@ya.ru")));
 
         Mockito
                 .when(repository.findById(requestNotFound))
@@ -189,7 +185,7 @@ class ItemRequestServiceImplTest {
                 .thenReturn(sourceItemRequest);
 
         Mockito
-                .when(itemRepository.findByRequest_Id(Mockito.anyLong()))
+                .when(itemRepository.findAllItemByRequestId(Mockito.any()))
                 .thenReturn(Collections.emptyList());
 
         List<ItemRequestResponseDto> items = itemRequestServiceImpl.findYourRequests(userId);
@@ -257,7 +253,7 @@ class ItemRequestServiceImplTest {
                 .thenReturn(getItemRequest(sourceItemRequest, page, size));
 
         Mockito
-                .when(itemRepository.findByRequest_Id(Mockito.anyLong()))
+                .when(itemRepository.findAllItemByRequestId(Mockito.any()))
                 .thenReturn(Collections.emptyList());
 
         List<ItemRequestResponseDto> items = itemRequestServiceImpl.findOtherRequests(userId, from, size);
