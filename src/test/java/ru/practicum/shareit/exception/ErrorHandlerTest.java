@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 class ErrorHandlerTest {
-    ErrorHandler errorHandler = new ErrorHandler();
+    private ErrorHandler errorHandler = new ErrorHandler();
 
     @Test
     void handleNotFoundException() {

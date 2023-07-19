@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 class BookingMapperImplTest {
-    BookingMapperImpl bookingMapper;
+    private BookingMapperImpl bookingMapper;
 
     @BeforeEach
     void beforeEach() {

@@ -4,9 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
@@ -14,13 +12,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 
 @DataJpaTest
 class ItemRequestRepositoryTest {
     @Autowired
     private TestEntityManager em;
-
     @Autowired
     private ItemRequestRepository repository;
 
@@ -36,13 +33,14 @@ class ItemRequestRepositoryTest {
         List<ItemRequest> found = repository.findByRequestorOrderByCreatedDesc(user);
 
         assertThat(found, hasSize(1));
+        assertThat(found.get(0), hasProperty("id", is(notNullValue())));
+        assertThat(found.get(0), hasProperty("description", is(equalTo(itemRequest.getDescription()))));
+        assertThat(found.get(0), hasProperty("requestor", is(equalTo(user))));
+        assertThat(found.get(0), hasProperty("created", is(equalTo(itemRequest.getCreated()))));
     }
 
     @Test
     void findByRequestorNotOrderByCreatedDesc() {
-        int page = 0;
-        Pageable pageable = PageRequest.of(page, 10);
-
         User user = em.persist(makeUser(null, "user", "user@user.com"));
         User otherUser = em.persist(makeUser(null, "otherUser", "otherUser@user.com"));
         em.flush();
@@ -51,9 +49,17 @@ class ItemRequestRepositoryTest {
         em.persist(itemRequest);
         em.flush();
 
-        Page<ItemRequest> found = repository.findByRequestorNotOrderByCreatedDesc(user, pageable);
+        List<ItemRequest> found = repository.findByRequestorNotOrderByCreatedDesc(user, PageRequest.of(0, 10)).getContent();
 
-        assertThat(found.getContent(), hasSize(1));
+        assertThat(found, hasSize(1));
+        assertThat(found.get(0), hasProperty("id", is(notNullValue())));
+        assertThat(found.get(0), hasProperty("description", is(equalTo(itemRequest.getDescription()))));
+        assertThat(found.get(0), hasProperty("requestor", is(equalTo(otherUser))));
+        assertThat(found.get(0), hasProperty("created", is(equalTo(itemRequest.getCreated()))));
+
+        found = repository.findByRequestorNotOrderByCreatedDesc(otherUser, PageRequest.of(0, 10)).getContent();
+
+        assertThat(found, hasSize(0));
     }
 
     private ItemRequest makeItemRequest(Long id, String description, User requestor, LocalDateTime created) {
@@ -74,5 +80,4 @@ class ItemRequestRepositoryTest {
 
         return user;
     }
-
 }

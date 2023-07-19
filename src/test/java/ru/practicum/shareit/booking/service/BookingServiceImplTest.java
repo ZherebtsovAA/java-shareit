@@ -40,16 +40,16 @@ import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceImplTest {
-    BookingServiceImpl bookingServiceImpl;
+    private BookingServiceImpl bookingServiceImpl;
     @Mock
-    BookingRepository bookingRepository;
+    private BookingRepository bookingRepository;
     @Mock
-    ItemRepository itemRepository;
+    private ItemRepository itemRepository;
     @Mock
-    UserRepository userRepository;
-    static BookingMapper bookingMapper;
-    static UserMapper userMapper;
-    static ItemMapper itemMapper;
+    private UserRepository userRepository;
+    private static BookingMapper bookingMapper;
+    private static UserMapper userMapper;
+    private static ItemMapper itemMapper;
 
     @BeforeAll
     static void beforeAll() {

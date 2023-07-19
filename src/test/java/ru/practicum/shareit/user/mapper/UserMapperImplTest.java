@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 class UserMapperImplTest {
-    UserMapperImpl userMapper;
+    private UserMapperImpl userMapper;
 
     @BeforeEach
     void beforeEach() {

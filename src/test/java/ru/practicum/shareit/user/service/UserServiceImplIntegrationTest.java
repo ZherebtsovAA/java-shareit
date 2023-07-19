@@ -7,13 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
 
 @Transactional
 @SpringBootTest(
@@ -22,7 +24,9 @@ import static org.hamcrest.Matchers.notNullValue;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserServiceImplIntegrationTest {
     @Autowired
-    UserService userService;
+    private EntityManager em;
+    @Autowired
+    private UserService userService;
 
     @Test
     void patchWhenConflictException() {
@@ -36,9 +40,31 @@ class UserServiceImplIntegrationTest {
 
     @Test
     void findAll() {
+        List<User> sourceUsers = List.of(
+                makeUser("user1", "user1@ya.ru"),
+                makeUser("user2", "user2@ya.ru"),
+                makeUser("user3", "user3@ya.ru"));
+
+        for (User user : sourceUsers) {
+            em.persist(user);
+        }
+        em.flush();
+
         List<UserDto> users = userService.findAll(0, 10);
 
-        assertThat(users, is(notNullValue()));
+        assertThat(users, hasSize(sourceUsers.size()));
+        for (User user : sourceUsers) {
+            assertThat(users, hasItem(allOf(
+                    hasProperty("name", equalTo(user.getName()))
+            )));
+        }
     }
 
+    private User makeUser(String name, String email) {
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+
+        return user;
+    }
 }

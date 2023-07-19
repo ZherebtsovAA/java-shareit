@@ -22,9 +22,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = ItemController.class)
 class ItemControllerTest {
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
     @MockBean
-    ItemService itemService;
+    private ItemService itemService;
     @Autowired
     private MockMvc mvc;
 

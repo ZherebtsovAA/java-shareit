@@ -44,20 +44,20 @@ import static org.hamcrest.Matchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceImplTest {
-    ItemServiceImpl itemServiceImpl;
+    private ItemServiceImpl itemServiceImpl;
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
     @Mock
-    ItemRepository itemRepository;
+    private ItemRepository itemRepository;
     @Mock
-    BookingRepository bookingRepository;
+    private BookingRepository bookingRepository;
     @Mock
-    CommentRepository commentRepository;
+    private CommentRepository commentRepository;
     @Mock
-    ItemRequestRepository itemRequestRepository;
-    static ItemMapper itemMapper;
-    static CommentMapper commentMapper;
-    static BookingMapper bookingMapper;
+    private ItemRequestRepository itemRequestRepository;
+    private static ItemMapper itemMapper;
+    private static CommentMapper commentMapper;
+    private static BookingMapper bookingMapper;
 
     @BeforeAll
     static void beforeAll() {

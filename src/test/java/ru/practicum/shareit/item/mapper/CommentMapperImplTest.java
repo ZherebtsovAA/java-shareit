@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 class CommentMapperImplTest {
-    CommentMapperImpl commentMapper;
+    private CommentMapperImpl commentMapper;
 
     @BeforeEach
     void beforeEach() {

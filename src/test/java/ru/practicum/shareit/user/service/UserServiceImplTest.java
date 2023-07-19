@@ -28,10 +28,10 @@ import static org.hamcrest.Matchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
-    UserServiceImpl userServiceImpl;
+    private UserServiceImpl userServiceImpl;
     @Mock
-    UserRepository repository;
-    static UserMapper userMapper;
+    private UserRepository repository;
+    private static UserMapper userMapper;
 
     @BeforeAll
     static void beforeAll() {
