@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.common.Constants;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 /**
