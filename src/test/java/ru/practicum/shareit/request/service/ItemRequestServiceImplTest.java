@@ -12,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.mapper.ItemMapperImpl;
@@ -216,19 +215,6 @@ class ItemRequestServiceImplTest {
                 () -> itemRequestServiceImpl.findYourRequests(userId));
 
         Assertions.assertEquals("пользователя с id{" + userId + "} нет в списке пользователей", exception.getMessage());
-    }
-
-    @Test
-    void findOtherRequestsWhenBadRequestException() {
-        Long userId = 1L;
-        Integer from = -1;
-        Integer size = 10;
-
-        BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> itemRequestServiceImpl.findOtherRequests(userId, from, size));
-
-        Assertions.assertEquals("request param from{" + from + "} не может быть отрицательным", exception.getMessage());
     }
 
     @Test

@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.common.CustomPageRequest;
-import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -38,7 +37,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Transactional
     @Override
-    public ItemRequestDto save(Long userId, ItemRequestDto itemRequestDto) throws NotFoundException {
+    public ItemRequestDto save(Long userId, ItemRequestDto itemRequestDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
@@ -49,7 +48,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public ItemRequestResponseDto findById(Long requestId, Long userId) throws NotFoundException {
+    public ItemRequestResponseDto findById(Long requestId, Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
@@ -62,7 +61,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestResponseDto> findYourRequests(Long userId) throws NotFoundException {
+    public List<ItemRequestResponseDto> findYourRequests(Long userId) {
         User requestor = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
@@ -89,12 +88,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestResponseDto> findOtherRequests(Long userId, Integer from, Integer size)
-            throws NotFoundException, BadRequestException {
-        if (from < 0) {
-            throw new BadRequestException("request param from{" + from + "} не может быть отрицательным");
-        }
-
+    public List<ItemRequestResponseDto> findOtherRequests(Long userId, Integer from, Integer size) {
         User otherUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 

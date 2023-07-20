@@ -16,7 +16,6 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.mapper.BookingMapperImpl;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -288,20 +287,6 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void findAllOwnerItemWhenBadRequestException() {
-        Long ownerId = 1L;
-        Integer from = -10;
-        Integer size = 10;
-
-        BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> itemServiceImpl.findAllOwnerItem(ownerId, from, size));
-
-        Assertions.assertEquals("request param from{" + from + "} не может быть отрицательным",
-                exception.getMessage());
-    }
-
-    @Test
     void findAllOwnerItem() {
         Long ownerId = 1L;
         Integer from = 0;
@@ -327,21 +312,6 @@ class ItemServiceImplTest {
                     hasProperty("ownerId", equalTo(item.getOwner().getId()))
             )));
         }
-    }
-
-    @Test
-    void findByNameAndDescriptionWhenBadRequestException() {
-        String searchLine = "дрель";
-        Boolean available = true;
-        Integer from = -10;
-        Integer size = 10;
-
-        BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> itemServiceImpl.findByNameAndDescription(searchLine, available, from, size));
-
-        Assertions.assertEquals("request param from{" + from + "} не может быть отрицательным",
-                exception.getMessage());
     }
 
     @Test

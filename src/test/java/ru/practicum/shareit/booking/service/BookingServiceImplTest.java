@@ -326,13 +326,6 @@ class BookingServiceImplTest {
         Item sourceItem = makeItem(1L, "дрель", "обычная дрель", true, owner, null);
         List<Booking> sourceBooking = List.of(makeBooking(bookingId, start, end, sourceItem, booker, null));
 
-        BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> bookingServiceImpl.findAllBookingByUserId(userId, BookingState.ALL, -10, 10));
-
-        Assertions.assertEquals("request param from{" + -10 + "} не может быть отрицательным",
-                exception.getMessage());
-
         Mockito
                 .when(userRepository.findById(ownerId))
                 .thenReturn(Optional.of(user));
@@ -409,13 +402,6 @@ class BookingServiceImplTest {
         User booker = makeUser(bookerId, "booker", "booker@user.com");
         Item sourceItem = makeItem(1L, "дрель", "обычная дрель", true, owner, null);
         List<Booking> sourceBooking = List.of(makeBooking(bookingId, start, end, sourceItem, booker, null));
-
-        BadRequestException exception = Assertions.assertThrows(
-                BadRequestException.class,
-                () -> bookingServiceImpl.findBookingForAllItemByUserId(bookerId, BookingState.ALL, -10, 10));
-
-        Assertions.assertEquals("request param from{" + -10 + "} не может быть отрицательным",
-                exception.getMessage());
 
         Mockito
                 .when(userRepository.findById(ownerId))

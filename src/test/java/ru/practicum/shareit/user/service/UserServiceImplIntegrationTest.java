@@ -18,9 +18,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsIterableContaining.hasItem;
 
 @Transactional
-@SpringBootTest(
-        properties = "db.name=test",
-        webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserServiceImplIntegrationTest {
     @Autowired

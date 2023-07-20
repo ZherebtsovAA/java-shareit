@@ -37,7 +37,7 @@ import java.util.Objects;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    static final Sort ID_SORT = Sort.by("id");
+    private static final Sort ID_SORT = Sort.by("id");
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
@@ -49,7 +49,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public ItemDto save(Long userId, ItemDto itemDto) throws NotFoundException {
+    public ItemDto save(Long userId, ItemDto itemDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
@@ -68,7 +68,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public CommentDto saveComment(Long itemId, Long userId, CommentDto commentDto) throws NotFoundException, BadRequestException {
+    public CommentDto saveComment(Long itemId, Long userId, CommentDto commentDto) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("вещи с id{" + itemId + "} нет в списке вещей"));
 
@@ -85,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public ItemDto patchUpdate(Long itemId, Long userId, ItemDto itemDto) throws NotFoundException {
+    public ItemDto patchUpdate(Long itemId, Long userId, ItemDto itemDto) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
@@ -112,10 +112,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDtoWithLastAndNextBooking findById(Long itemId, Long userId) throws NotFoundException {
+    public ItemDtoWithLastAndNextBooking findById(Long itemId, Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
-
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("вещи с id{" + itemId + "} нет в списке вещей"));
@@ -130,12 +129,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoWithLastAndNextBooking> findAllOwnerItem(Long ownerId, Integer from, Integer size)
-            throws BadRequestException {
-        if (from < 0) {
-            throw new BadRequestException("request param from{" + from + "} не может быть отрицательным");
-        }
-
+    public List<ItemDtoWithLastAndNextBooking> findAllOwnerItem(Long ownerId, Integer from, Integer size) {
         User owner = new User();
         owner.setId(ownerId);
 
@@ -162,12 +156,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> findByNameAndDescription(String searchLine, Boolean available, Integer from, Integer size)
-            throws BadRequestException {
-        if (from < 0) {
-            throw new BadRequestException("request param from{" + from + "} не может быть отрицательным");
-        }
-
+    public List<ItemDto> findByNameAndDescription(String searchLine, Boolean available, Integer from, Integer size) {
         if (searchLine.isEmpty()) {
             return Collections.emptyList();
         }

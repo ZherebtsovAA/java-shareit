@@ -31,7 +31,7 @@ import java.util.Objects;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
-    static final Sort START_SORT = Sort.by("start");
+    private static final Sort START_SORT = Sort.by("start");
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -41,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingDto save(Long bookerId, BookingRequestDto bookingRequestDto) throws NotFoundException, BadRequestException {
+    public BookingDto save(Long bookerId, BookingRequestDto bookingRequestDto) {
         checkStartAndEndDateBooking(bookingRequestDto);
 
         Long itemId = bookingRequestDto.getItemId();
@@ -73,8 +73,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingDto patchUpdate(Long bookingId, Long ownerId, Boolean approved)
-            throws NotFoundException, BadRequestException {
+    public BookingDto patchUpdate(Long bookingId, Long ownerId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("бронирования с id{" + bookingId + "} нет в списке бронирований"));
 
@@ -101,7 +100,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto findById(Long bookingId, Long userId) throws NotFoundException {
+    public BookingDto findById(Long bookingId, Long userId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("бронирования с id{" + bookingId + "} нет в списке бронирований"));
 
@@ -116,12 +115,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> findAllBookingByUserId(Long userId, BookingState state, Integer from, Integer size)
-            throws NotFoundException, BadRequestException {
-        if (from < 0) {
-            throw new BadRequestException("request param from{" + from + "} не может быть отрицательным");
-        }
-
+    public List<BookingDto> findAllBookingByUserId(Long userId, BookingState state, Integer from, Integer size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
@@ -149,12 +143,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> findBookingForAllItemByUserId(Long userId, BookingState state, Integer from, Integer size)
-            throws NotFoundException, BadRequestException {
-        if (from < 0) {
-            throw new BadRequestException("request param from{" + from + "} не может быть отрицательным");
-        }
-
+    public List<BookingDto> findBookingForAllItemByUserId(Long userId, BookingState state, Integer from, Integer size) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
@@ -182,7 +171,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void checkStartAndEndDateBooking(BookingRequestDto bookingRequestDto) throws BadRequestException {
+    private void checkStartAndEndDateBooking(BookingRequestDto bookingRequestDto) {
         if (bookingRequestDto.getEnd().isBefore(bookingRequestDto.getStart())) {
             throw new BadRequestException("дата окончания бронирования ранее даты начала бронирования");
         }

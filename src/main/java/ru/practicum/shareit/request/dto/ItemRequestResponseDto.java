@@ -17,7 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 public class ItemRequestResponseDto {
     private Long id;
-    @NotNull
     @NotBlank
     private String description;
     private Long requestorId;
