@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.service;
 
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithLastAndNextBooking;
@@ -12,11 +11,11 @@ public interface ItemService {
 
     CommentDto saveComment(Long itemId, Long userId, CommentDto commentDto);
 
-    ItemDto patchUpdate(Long itemId, Long userId, ItemDto itemDto) throws NotFoundException;
+    ItemDto patchUpdate(Long itemId, Long userId, ItemDto itemDto);
 
-    ItemDtoWithLastAndNextBooking findById(Long itemId, Long userId) throws NotFoundException;
+    ItemDtoWithLastAndNextBooking findById(Long itemId, Long userId);
 
-    List<ItemDtoWithLastAndNextBooking> findAllOwnerItem(Long ownerId);
+    List<ItemDtoWithLastAndNextBooking> findAllOwnerItem(Long ownerId, Integer from, Integer size);
 
-    List<ItemDto> findByNameAndDescription(String searchLine, Boolean available, Integer numberItemToView);
+    List<ItemDto> findByNameAndDescription(String searchLine, Boolean available, Integer from, Integer size);
 }

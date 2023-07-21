@@ -33,10 +33,9 @@ public class Item {
     @ToString.Exclude
     @JoinColumn(name = "owner_id")
     private User owner;
-    //@OneToOne(fetch = FetchType.LAZY)
-    //@ToString.Exclude
-    //@JoinColumn(name = "request_id")
-    @Transient
+    @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @JoinColumn(name = "request_id")
     private ItemRequest request;
 
     @Override
@@ -48,7 +47,7 @@ public class Item {
 
     @Override
     public int hashCode() {
-        return getClass().hashCode();
+        return id.hashCode();
     }
 
 }

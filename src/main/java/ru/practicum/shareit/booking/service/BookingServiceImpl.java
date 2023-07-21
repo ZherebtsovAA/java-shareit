@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.common.CustomPageRequest;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -29,6 +31,7 @@ import java.util.Objects;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
+    private static final Sort START_SORT = Sort.by("start");
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -38,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingDto save(Long bookerId, BookingRequestDto bookingRequestDto) throws NotFoundException, BadRequestException {
+    public BookingDto save(Long bookerId, BookingRequestDto bookingRequestDto) {
         checkStartAndEndDateBooking(bookingRequestDto);
 
         Long itemId = bookingRequestDto.getItemId();
@@ -46,7 +49,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("вещи с id{" + itemId + "} нет в списке вещей"));
 
         List<Booking> bookingItemWithItemId = bookingRepository.findByItemAndStatusIn(item,
-                List.of(BookingStatus.WAITING, BookingStatus.APPROVED), Sort.by(Sort.Direction.ASC, "start"));
+                List.of(BookingStatus.WAITING, BookingStatus.APPROVED), START_SORT.ascending());
         if (checkAvailableBookingDates(bookingRequestDto, bookingItemWithItemId)) {
             throw new BadRequestException("бронирование на указанные даты и время невозможно");
         }
@@ -70,8 +73,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
-    public BookingDto patchUpdate(Long bookingId, Long ownerId, Boolean approved)
-            throws NotFoundException, BadRequestException {
+    public BookingDto patchUpdate(Long bookingId, Long ownerId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("бронирования с id{" + bookingId + "} нет в списке бронирований"));
 
@@ -98,7 +100,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto findById(Long bookingId, Long userId) throws NotFoundException {
+    public BookingDto findById(Long bookingId, Long userId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("бронирования с id{" + bookingId + "} нет в списке бронирований"));
 
@@ -113,62 +115,63 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> findAllBookingByUserId(Long userId, BookingState state) throws NotFoundException {
+    public List<BookingDto> findAllBookingByUserId(Long userId, BookingState state, Integer from, Integer size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "start");
+        Pageable pageable = new CustomPageRequest(from, size, START_SORT.descending()).getPageRequest();
         switch (state) {
             case ALL:
-                return bookingMapper.toBookingDto(bookingRepository.findByBooker(user, sort));
+                return bookingMapper.toBookingDto(bookingRepository.findByBooker(user, pageable));
             case CURRENT:
-                return bookingMapper.toBookingDto(bookingRepository.findByBookerWhereStatusCurrent(user, sort));
+                return bookingMapper.toBookingDto(bookingRepository.findByBookerWhereStatusCurrent(user, pageable));
             case PAST:
                 return bookingMapper.toBookingDto(bookingRepository.findByBookerAndEndBefore(user,
-                        LocalDateTime.now(), sort));
+                        LocalDateTime.now(), pageable));
             case FUTURE:
                 return bookingMapper.toBookingDto(bookingRepository.findByBookerAndStatusInAndStartAfter(user,
-                        List.of(BookingStatus.APPROVED, BookingStatus.WAITING), LocalDateTime.now(), sort));
+                        List.of(BookingStatus.APPROVED, BookingStatus.WAITING), LocalDateTime.now(), pageable));
             case WAITING:
                 return bookingMapper.toBookingDto(bookingRepository.findByBookerAndStatus(user, BookingStatus.WAITING,
-                        sort));
+                        pageable));
             case REJECTED:
                 return bookingMapper.toBookingDto(bookingRepository.findByBookerAndStatus(user, BookingStatus.REJECTED,
-                        sort));
+                        pageable));
             default:
                 return Collections.emptyList();
         }
     }
 
     @Override
-    public List<BookingDto> findBookingForAllItemByUserId(Long userId, BookingState state) throws NotFoundException {
+    public List<BookingDto> findBookingForAllItemByUserId(Long userId, BookingState state, Integer from, Integer size) {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "start");
+        Pageable pageable = new CustomPageRequest(from, size, START_SORT.descending()).getPageRequest();
         switch (state) {
             case ALL:
-                return bookingMapper.toBookingDto(bookingRepository.findBookingForAllItemByUser(owner, sort));
+                return bookingMapper.toBookingDto(bookingRepository.findBookingForAllItemByUser(owner, pageable));
             case CURRENT:
-                return bookingMapper.toBookingDto(bookingRepository.findBookingAllItemByUserWhereStatusCurrent(owner, sort));
+                return bookingMapper.toBookingDto(bookingRepository.findBookingAllItemByUserWhereStatusCurrent(owner,
+                        pageable));
             case PAST:
                 return bookingMapper.toBookingDto(bookingRepository.findBookingForAllItemByUserWhereEndBefore(owner,
-                        LocalDateTime.now(), sort));
+                        LocalDateTime.now(), pageable));
             case FUTURE:
                 return bookingMapper.toBookingDto(bookingRepository.findBookingForAllItemByUserWhereStartAfter(owner,
-                        List.of(BookingStatus.APPROVED, BookingStatus.WAITING), LocalDateTime.now(), sort));
+                        List.of(BookingStatus.APPROVED, BookingStatus.WAITING), LocalDateTime.now(), pageable));
             case WAITING:
                 return bookingMapper.toBookingDto(bookingRepository.findBookingForAllItemByUser(owner,
-                        BookingStatus.WAITING, sort));
+                        BookingStatus.WAITING, pageable));
             case REJECTED:
                 return bookingMapper.toBookingDto(bookingRepository.findBookingForAllItemByUser(owner,
-                        BookingStatus.REJECTED, sort));
+                        BookingStatus.REJECTED, pageable));
             default:
                 return Collections.emptyList();
         }
     }
 
-    private void checkStartAndEndDateBooking(BookingRequestDto bookingRequestDto) throws BadRequestException {
+    private void checkStartAndEndDateBooking(BookingRequestDto bookingRequestDto) {
         if (bookingRequestDto.getEnd().isBefore(bookingRequestDto.getStart())) {
             throw new BadRequestException("дата окончания бронирования ранее даты начала бронирования");
         }
@@ -191,5 +194,4 @@ public class BookingServiceImpl implements BookingService {
 
         return false;
     }
-
 }

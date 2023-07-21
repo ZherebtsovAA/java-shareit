@@ -21,6 +21,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private static final Sort ID_SORT = Sort.by("id");
     private final UserRepository repository;
     private final UserMapper userMapper;
 
@@ -33,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserDto patchUpdate(Long userId, UserDto userDto) throws NotFoundException, ConflictException {
+    public UserDto patchUpdate(Long userId, UserDto userDto) {
         User user = repository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
 
@@ -56,7 +57,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto findById(Long userId) throws NotFoundException {
+    public UserDto findById(Long userId) {
         User result = repository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
         return userMapper.toUserDto(result);
@@ -64,18 +65,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> findAll(Integer numberPage, Integer numberUserToView) {
-        Sort sortById = Sort.by(Sort.Direction.ASC, "id");
-        Pageable page = PageRequest.of(numberPage, numberUserToView, sortById);
+        Pageable page = PageRequest.of(numberPage, numberUserToView, ID_SORT.ascending());
         List<User> users = repository.findAll(page).getContent();
         return userMapper.toUserDto(users);
     }
 
     @Transactional
     @Override
-    public void deleteById(Long userId) throws NotFoundException {
+    public void deleteById(Long userId) {
         repository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("пользователя с id{" + userId + "} нет в списке пользователей"));
         repository.deleteById(userId);
     }
-
 }
